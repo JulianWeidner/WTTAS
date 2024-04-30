@@ -10,13 +10,6 @@ driver = webdriver.Chrome()
 driver.get('https://tss.warthunder.com/index.php?action=current_tournaments#')
 driver.implicitly_wait(2.0)
 
-def filter_tournaments():
-    filter_toggle_btn =  driver.find_element(By.CSS_SELECTOR, "a.btn.btn-warning.btn-xs[data-toggle='collapse']")
-    apply_filter_btn = driver.find_element(By.CSS_SELECTOR, "a.btn.btn-warning.btn-lg[onclick*='GetTournamentsList']")
-    military_branch_dropdown = driver.find_element(By.ID, 'statisticGroup')
-    Select(military_branch_dropdown).select_by_value('aircraft') #selector example, options are noted at the bottom of the script
-
-
 def close_gdpr():
     print('closing GDPR')
     deny_button = driver.find_element(By.CSS_SELECTOR, "button[data-cookiefirst-action='reject']")
