@@ -62,55 +62,38 @@ def get_tournament_details(tournament):
     sub_driver = driver = webdriver.Chrome()
     sub_driver.get(url)
 
-    #map_section_element = sub_driver.find_element(By.CSS_SELECTOR, '.param_tournament_maps.text-center')
-
+    #map function
     maps_list = []
     maps = sub_driver.find_elements(By.NAME, 'name_maps')
     for map_element in maps:
         maps_list.append(map_element.text)
 
-    vehicle_list = []
-    nation_list = []
+    
+    #nation & vehicle function
+    nation_vehicles = {} #dictonary of nation: [vehicles] 
+    #grab the vehicle data row (contains country flag & vehicles)
     vehicle_row_elements = sub_driver.find_elements(By.CSS_SELECTOR, 'div.row.vehicle[name="tehnicks_flag"]')
 
     for row in vehicle_row_elements:
+        #yoink country name from the flag image.. smh ik.
         nation_img_url = row.find_element(By.CSS_SELECTOR, 'img[name="image_flag"]').get_attribute('src')
         if nation_img_url: 
             nation_png_str = nation_img_url.split('country')[-1]
             nation = nation_png_str.split('_')[1]
-            nation_list.append(nation)
-        
-        vehicles = row.find_elements(By.CSS_SELECTOR, 'div[name="tehnicks_flag"] name_netch[name="name_netch"]')
-        for vehicle in vehicles:
-            
-            vehicle_list.append(vehicle.text.replace("▄", "").replace("▀", ""))
+            #from the same row, collect all the vehicles
+            vehicles = row.find_elements(By.CSS_SELECTOR, 'div[name="tehnicks_flag"] name_netch[name="name_netch"]')
+            vehicle_list = []
 
+            for vehicle in vehicles: #clean up some of the ugly text
+                vehicle_list.append(vehicle.text.replace("▄", "").replace("▀", "")) #these just exist. Just remove them.
+            nation_vehicles[f'{nation}'] = vehicle_list
 
-        
-            
-        
-
-    '''
-    nations_list = []
-    nations_elements = sub_driver.find_elements(By.CSS_SELECTOR, 'img[name="image_flag"]')
-    for nation_element in nations_elements:
-            url = nation_element.get_attribute('src')
-            if url:
-                png_string = url.split('country')[-1]
-                country = png_string.split('_')[1]
-                nations_list.append(country)
-            else:
-                print("That one empty nation element exists. Ignoring")
-    '''
-
-    
     
     data = {
         'id': tournament.detail_id,
         'prize_pool':  driver.find_element(By.CSS_SELECTOR, 'b[id-tss="prize_pool"]').text,
         'maps': maps_list,
-        'nations': nation_list,
-        'vehicles': vehicle_list, 
+        'nation_vehicles': nation_vehicles
     }
 
     sub_driver.quit()
@@ -118,8 +101,6 @@ def get_tournament_details(tournament):
 
 def create_tournament_detail(data):
     return TournamentDetail(**data)
-
-    
 
     
 
@@ -138,13 +119,10 @@ def main():
         tourn_detail_obj = create_tournament_detail(tourn_detail_elements)
 
         print("Tournament Object:",  tourn_obj.title, tourn_obj.date), "--", tourn_detail_obj.id, tourn_detail_obj.prize_pool,#, tourn_detail_obj.prize_pool )
-        print("T Detail Object: ", tourn_detail_obj.id,tourn_detail_obj.prize_pool, tourn_detail_obj.maps, tourn_detail_obj.nations, tourn_detail_obj.vehicles )
+        print("T Detail Object: ", tourn_detail_obj.id, tourn_detail_obj.prize_pool, tourn_detail_obj.maps, tourn_detail_obj.nation_vehicles)
     
     driver.quit()
 
 
     
-
-
-
 main()

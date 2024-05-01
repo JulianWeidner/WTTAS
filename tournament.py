@@ -18,8 +18,9 @@ class TournamentDetail(): #through table with references to those other tables? 
     def __init__(self, **kwargs):
         self.id = kwargs['id']
         self.maps = kwargs['maps'] #own table
-        self.nations = kwargs['nations'] #own table
-        self.vehicles = kwargs['vehicles'] #own table
+        #self.nations = kwargs['nations'] #own table
+        #self.vehicles = kwargs['vehicles'] #own table
+        self.nation_vehicles = kwargs['nation_vehicles']
         self.prize_pool = kwargs['prize_pool']
 
     def __str__(self):
