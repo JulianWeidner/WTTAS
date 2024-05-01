@@ -74,9 +74,8 @@ def create_tournament_obj(tournament_card):
 
     return Tournament(**data)
 
-def get_tournament_details(tournament):
+def get_tournament_details(sub_driver, tournament):
     url = f'https://tss.warthunder.com/index.php?action=tournament&id={tournament.detail_id}'
-    sub_driver = driver = webdriver.Chrome()
     sub_driver.get(url)
 
     #map function
@@ -108,7 +107,7 @@ def get_tournament_details(tournament):
     
     data = {
         'id': tournament.detail_id,
-        'prize_pool':  driver.find_element(By.CSS_SELECTOR, 'b[id-tss="prize_pool"]').text,
+        'prize_pool':  sub_driver.find_element(By.CSS_SELECTOR, 'b[id-tss="prize_pool"]').text,
         'maps': maps_list,
         'nation_vehicles': nation_vehicles
     }
@@ -134,8 +133,9 @@ def main():
 
     print('Creating Tournament Objects (printed from main)')
     for tournament in active_tournaments:
+        sub_driver = setup_driver()
         tourn_obj = create_tournament_obj(tournament)
-        tourn_detail_elements = get_tournament_details(tourn_obj)
+        tourn_detail_elements = get_tournament_details(sub_driver, tourn_obj)
         tourn_detail_obj = create_tournament_detail(tourn_detail_elements)
 
         print("Tournament Object:",  tourn_obj.title, tourn_obj.date), "--", tourn_detail_obj.id, tourn_detail_obj.prize_pool,#, tourn_detail_obj.prize_pool )
