@@ -1,22 +1,40 @@
-from datetime import datetime
-import time
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
+
 from tournament import Tournament
 
+
+
+
 #create driver/browser open page
-driver = webdriver.Chrome()
-driver.get('https://tss.warthunder.com/index.php?action=current_tournaments#')
-driver.implicitly_wait(2.0)
+def setup_driver():
+    # Set up Chrome options
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Ensure GUI is off
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+    chrome_options.add_argument('start-maximized')  #
+    chrome_options.add_argument('disable-infobars')
+    chrome_options.add_argument("--disable-extensions")
 
-def close_gdpr():
+    # Set path to chromedriver as needed
+    service = Service(executable_path='chrome_driver/chromedriver')
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    return driver
+
+def close_gdpr(driver):
     print('closing GDPR')
-    deny_button = driver.find_element(By.CSS_SELECTOR, "button[data-cookiefirst-action='reject']")
-    deny_button.click()
-    driver.implicitly_wait(2.0)
+    try:
+        WebDriverWait(driver, 10).until(expected_conditions.element_to_be_clickable(driver.find_element(By.CSS_SELECTOR, "button[data-cookiefirst-action='reject']")))
+        deny_button = driver.find_element(By.CSS_SELECTOR, "button[data-cookiefirst-action='reject']")
+        deny_button.click()
+    except Exception as e:
+        print(f'Failed to close GDPR: {str(e)}')
 
-def get_active_tournaments():
+def get_active_tournaments(driver):
     past_card = driver.find_elements(By.CSS_SELECTOR, ".row.container_info_tournament.past")
     active_tournaments = []
     more_btn = driver.find_element(By.ID, 'linkLoadTournaments')
@@ -53,12 +71,15 @@ def create_tournament_obj(tournament_card):
     
 
 def main():
+    driver = setup_driver()
+    driver.get("https://tss.warthunder.com/index.php?action=current_tournaments#")
+    
     #close gdpr 
-    close_gdpr()
-    driver.implicitly_wait(2.0)
+    close_gdpr(driver)
 
-    #create list of active tournaments
-    active_tournaments = get_active_tournaments()
+
+    active_tournaments = get_active_tournaments(driver)
+
 
     print('Creating Tournament Objects (printed from main)')
     for tournament in active_tournaments:
@@ -67,8 +88,6 @@ def main():
     driver.quit()
 
 
-    
 
-
-
-main()
+if __name__ ==  '__main__':
+    main()
