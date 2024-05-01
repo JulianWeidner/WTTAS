@@ -61,13 +61,56 @@ def get_tournament_details(tournament):
     url = f'https://tss.warthunder.com/index.php?action=tournament&id={tournament.detail_id}'
     sub_driver = driver = webdriver.Chrome()
     sub_driver.get(url)
+
+    #map_section_element = sub_driver.find_element(By.CSS_SELECTOR, '.param_tournament_maps.text-center')
+
+    maps_list = []
+    maps = sub_driver.find_elements(By.NAME, 'name_maps')
+    for map_element in maps:
+        maps_list.append(map_element.text)
+
+    vehicle_list = []
+    nation_list = []
+    vehicle_row_elements = sub_driver.find_elements(By.CSS_SELECTOR, 'div.row.vehicle[name="tehnicks_flag"]')
+
+    for row in vehicle_row_elements:
+        nation_img_url = row.find_element(By.CSS_SELECTOR, 'img[name="image_flag"]').get_attribute('src')
+        if nation_img_url: 
+            nation_png_str = nation_img_url.split('country')[-1]
+            nation = nation_png_str.split('_')[1]
+            nation_list.append(nation)
+        
+        vehicles = row.find_elements(By.CSS_SELECTOR, 'div[name="tehnicks_flag"] name_netch[name="name_netch"]')
+        for vehicle in vehicles:
+            
+            vehicle_list.append(vehicle.text.replace("▄", "").replace("▀", ""))
+
+
+        
+            
+        
+
+    '''
+    nations_list = []
+    nations_elements = sub_driver.find_elements(By.CSS_SELECTOR, 'img[name="image_flag"]')
+    for nation_element in nations_elements:
+            url = nation_element.get_attribute('src')
+            if url:
+                png_string = url.split('country')[-1]
+                country = png_string.split('_')[1]
+                nations_list.append(country)
+            else:
+                print("That one empty nation element exists. Ignoring")
+    '''
+
+    
     
     data = {
         'id': tournament.detail_id,
         'prize_pool':  driver.find_element(By.CSS_SELECTOR, 'b[id-tss="prize_pool"]').text,
-        #'maps': ,
-        #'nations': , 
-        #'vehicles': , 
+        'maps': maps_list,
+        'nations': nation_list,
+        'vehicles': vehicle_list, 
     }
 
     sub_driver.quit()
@@ -94,8 +137,8 @@ def main():
         tourn_detail_elements = get_tournament_details(tourn_obj)
         tourn_detail_obj = create_tournament_detail(tourn_detail_elements)
 
-        print( tourn_obj.title, tourn_obj.date, "--", tourn_detail_obj.id, tourn_detail_obj.prize_pool )#, tourn_detail_obj.prize_pool )
-    
+        print("Tournament Object:",  tourn_obj.title, tourn_obj.date), "--", tourn_detail_obj.id, tourn_detail_obj.prize_pool,#, tourn_detail_obj.prize_pool )
+        print("T Detail Object: ", tourn_detail_obj.id,tourn_detail_obj.prize_pool, tourn_detail_obj.maps, tourn_detail_obj.nations, tourn_detail_obj.vehicles )
     
     driver.quit()
 
